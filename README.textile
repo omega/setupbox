@@ -8,6 +8,7 @@ remote servers using scp/ssh, which now happens automaticly since we have instal
 the ssh key :)
 
 h1. Why?
+
 *setupbox* is a little utility that started development since the servers at work
 lacked shared storage. I got tired of retyping ssh-key copy, vimrc setup, plugins, 
 environment etc. So I wrote a simple tool.
