@@ -12,7 +12,10 @@ syntax on
 autocmd FileType perl set autoindent|set smartindent
 
 " 4 space tabs
-autocmd FileType perl set tabstop=4|set shiftwidth=4|set expandtab|set softtabstop=4
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set softtabstop=4
 
 " show matching brackets
 autocmd FileType perl set showmatch
@@ -43,3 +46,4 @@ nmap <s-tab> ^i<bs><esc>
 " paste mode - this will avoid unexpected effects when you
 " cut or copy some text from one window and paste it in Vim.
 set pastetoggle=<F11>
+map <F12> :NERDTreeToggle<CR>
