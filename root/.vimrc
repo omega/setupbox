@@ -25,6 +25,10 @@ autocmd FileType perl set makeprg=perl\ -c\ %\ $*
 autocmd FileType perl set errorformat=%f:%l:%m
 autocmd FileType perl set autowrite
 
+" Template Toolkit
+au BufNewFile,BufRead *.tt setf tt2html
+au BufNewFile,BufRead *.tt2 setf tt2html
+
 " dont use Q for Ex mode
 map Q :q
 

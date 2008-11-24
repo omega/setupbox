@@ -40,10 +40,10 @@ for host in "$@"; do
         i=`echo ${i} | sed -e "s/^\.\///"`
         if [ -f "${ROOT}/root/$i" ]; then
             echo "   file: ${i}"
-            echo scp "${ROOT}/root/${i}" ${U}@${host}:$i
+            scp "${ROOT}/root/${i}" ${U}@${host}:$i
         elif [ -d "${ROOT}/root/$i" ]; then
             echo "    dir: ${i}"
-            echo ssh ${U}@${host} "mkdir -p ${i}"
+            ssh ${U}@${host} "mkdir -p ${i}"
         else
             echo "    unk: ${i}  ((( ERROR )))"
         fi
