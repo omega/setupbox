@@ -1,0 +1,14 @@
+h1. What?
+
+*setupbox* copies a users ssh-key to a one or more servers, and adds the key to
+~/.ssh/authorized_keys.
+
+*setupbox* then copies a directory of files to the same one or more 
+remote servers using scp/ssh, which now happens automaticly since we have installed
+the ssh key :)
+
+h1. Why?
+*setupbox* is a little utility that started development since the servers at work
+lacked shared storage. I got tired of retyping ssh-key copy, vimrc setup, plugins, 
+environment etc. So I wrote a simple tool.
+
