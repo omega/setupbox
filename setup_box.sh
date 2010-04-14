@@ -27,10 +27,10 @@ for host in "$@"; do
     echo " ssh (from ~/.ssh/):"
     if [ -f ~/.ssh/id_dsa.pub ]; then
         echo "  id_dsa.pub"
-        #cat ~/.ssh/id_dsa.pub | ssh ${U}@${host} "mkdir -m 0700 -p .ssh && cat - >> ~/.ssh/authorized_keys && chmod 0600 ~/.ssh/authorized_keys"
+        cat ~/.ssh/id_dsa.pub | ssh ${U}@${host} "mkdir -m 0700 -p .ssh && cat - >> ~/.ssh/authorized_keys && chmod 0600 ~/.ssh/authorized_keys"
     elif [ -f ~/.ssh/id_rsa.pub ]; then
         echo "  id_rsa.pub"
-        #    cat ~/.ssh/id_rsa.pub | ssh ${U}@${host} "mkdir -m 0700 -p .ssh && cat - >> ~/.ssh/authorized_keys && chmod 0600 ~/.ssh/authorized_keys"
+        cat ~/.ssh/id_rsa.pub | ssh ${U}@${host} "mkdir -m 0700 -p .ssh && cat - >> ~/.ssh/authorized_keys && chmod 0600 ~/.ssh/authorized_keys"
     fi
     echo " transfering files"
     for i in ${items}; do
