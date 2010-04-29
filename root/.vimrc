@@ -16,6 +16,8 @@ set tabstop=4
 set shiftwidth=4
 set expandtab
 set softtabstop=4
+set backspace=2
+set autoindent
 
 " show matching brackets
 autocmd FileType perl set showmatch
