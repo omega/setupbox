@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ROOT=`dirname $BASH_SOURCE`
+
+for i in `ls $ROOT | grep -v '^00'`; do
+    . $ROOT/$i
+done

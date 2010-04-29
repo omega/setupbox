@@ -1,0 +1,179 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long;
+use Pod::Usage;
+use ExtUtils::MakeMaker;
+use File::Temp;
+use File::Spec;
+use Config;
+use version;
+use constant WIN32 => $^O eq 'MSWin32';
+
+our $VERSION = "0.04";
+
+my $index_url = 'http://www.cpan.org/modules/02packages.details.txt.gz';
+my $quote = WIN32 ? q/"/ : q/'/;
+
+GetOptions(
+    'h|help'  => \my $help,
+    'verbose' => \my $verbose,
+) or pod2usage();
+pod2usage() if $help;
+
+unless ($ENV{HARNESS_ACTIVE}) {
+    &main;
+    exit;
+}
+
+sub main {
+    init_tools();
+
+    my $tmpfile = File::Temp->new(UNLINK => 1, SUFFIX => '.gz');
+    getstore($index_url, $tmpfile->filename) or die "Cannot getstore file";
+
+    my $fh = zopen($tmpfile) or die "cannot open $tmpfile";
+    # skip header part
+    while (my $line = <$fh>) {
+        last if $line eq "\n";
+    }
+    # body part
+    my %seen;
+    while (my $line = <$fh>) {
+        my ($pkg, $version, $dist) = split /\s+/, $line;
+        next if $dist =~ m{/perl-\.[0-9._]+\.tar\.gz$};
+        (my $file = $pkg) =~ s!::!/!g;
+        $file = "${file}.pm";
+        SCAN_INC: for my $dir (@INC) {
+            my $path = "$dir/$file";
+            next unless -f $path;
+            my $inst_version = parse_version($path);
+               $inst_version  =~ s/\s+//; # workaround for Attribute::Params::Validate
+            next if $inst_version eq 'undef';
+            if ($inst_version ne $version && version->new($inst_version) < version->new($version)) {
+                next if $seen{$dist}++;
+                if ($verbose) {
+                    printf "%-30s %-7s %-7s %s\n", $pkg, $inst_version, $version, $dist;
+                } else {
+                    print "$dist\n";
+                }
+            }
+            last SCAN_INC;
+        }
+    }
+}
+
+sub parse_version {
+    my $path = shift;
+    local $SIG{__WARN__} = sub {
+        # This is workaround for EU::MM's issue.
+        # following one-liner makes too long warnings.
+        #   perl -e 'use ExtUtils::MM; MM->parse_version("/usr/local/app/perl-5.10.1/lib/site_perl/5.10.1/Authen/Simple/Apache.pm")'
+        return if @_ && $_[0] =~ /^Could not eval/;
+        CORE::warn(@_);
+    };
+    MM->parse_version($path);
+}
+
+# taken from cpanminus
+sub which {
+    my($name) = @_;
+    my $exe_ext = $Config{_exe};
+    foreach my $dir(File::Spec->path){
+        my $fullpath = File::Spec->catfile($dir, $name);
+        if (-x $fullpath || -x ($fullpath .= $exe_ext)){
+            if ($fullpath =~ /\s/ && $fullpath !~ /^$quote/) {
+                $fullpath = "$quote$fullpath$quote"
+            }
+            return $fullpath;
+        }
+    }
+    return;
+}
+
+sub init_tools {
+    if (!$ENV{DEBUG_WGET} && eval { require LWP::Simple }) {
+        *getstore = sub { LWP::Simple::getstore(@_) == 200 };
+    } elsif (my $wget = which 'wget') {
+        *getstore = sub {
+            my($uri, $path) = @_;
+            return file_getstore($uri, $path) if $uri =~ s!^file:/+!/!;
+            system($wget, '--quiet', $uri, '-O', $path) == 0;
+        };
+    } else {
+        die "Cannot find LWP::Simple and wget.\n";
+    }
+
+    if (!$ENV{DEBUG_ZCAT} && eval { require IO::Zlib }) {
+        *zopen = sub {
+            IO::Zlib->new($_[0], "rb");
+        };
+    } elsif (my $zcat = which 'zcat') {
+        *zopen = sub {
+            my $file = shift;
+            open(my $fh, '-|', $zcat, $file)
+                or return;
+            return $fh;
+        };
+    } else {
+        die "Cannot find IO::Zlib or zcat.\n";
+    }
+}
+
+__END__
+
+=head1 NAMES
+
+cpan-outdated - detect outdated CPAN modules in your environment
+
+=head1 SYNOPSIS
+
+    # print list of outdated modules
+    % cpan-outdated
+
+    # verbose
+    % cpan-outdated --verbose
+
+    # install with cpan
+    % cpan-outdated | xargs cpan -i
+
+    # install with cpanm
+    % cpan-outdated | xargs cpanm
+
+=head1 DESCRIPTION
+
+This module print list of outdated CPAN modules in your machine.
+
+It's same feature of 'CPAN::Shell->r', but cpan-outdated is so fast and less memory.
+
+This script can integrate with cpanm command.
+
+=head1 DEPENDENCIES
+
+perl 5.8 or later (Actually I believe it works with pre 5.8 too but haven't tested).
+
+=over 4
+
+=item LWP or 'wget' to get a index file over HTTP.
+
+=item IO::Zlib or 'zcat' to decode gziped index file.
+
+=item version.pm
+
+=back
+
+=head1 AUTHOR
+
+Tokuhiro Matsuno
+
+=head1 LICENSE
+
+Copyright (C) 2009 Tokuhiro Matsuno.
+
+This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+L<CPAN>
+
+=cut

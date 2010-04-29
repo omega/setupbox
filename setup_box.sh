@@ -48,5 +48,6 @@ for host in "$@"; do
             echo "    unk: ${i}  ((( ERROR )))"
         fi
     done;
-
+    echo " bootstrapping the box :p"
+    echo ". ~/.bash/00loader" | ssh ${U}@${host} "grep -q 00loader ~/.bashrc || cat - >> ~/.bashrc"
 done;
