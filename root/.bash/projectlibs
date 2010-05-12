@@ -1,0 +1,14 @@
+if [ -d ~/projects ]; then
+    # We got a projects dir, lets try to distil some magic from it
+    for i in `find ~/projects/ -wholename '*.svn' -prune -o -wholename '*/t' -prune -o -wholename '*/xt' -prune -o -type d -print`; do
+        if [ -d "$i/lib" ]; then
+            PERL5LIB=$i/lib:$PERL5LIB
+        fi
+        if [ -d "$i/script" ]; then
+            PATH=$i/script:$PATH
+        fi
+        if [ -d "$i/bin" ]; then
+            PATH=$i/bin:$PATH
+        fi
+    done
+fi
